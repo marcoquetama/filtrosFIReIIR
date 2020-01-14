@@ -1,0 +1,287 @@
+import signals as sigs
+from matplotlib import pyplot as plt
+from scipy.fftpack import fft,ifft, fftshift
+import numpy as np
+from matplotlib import style
+import math
+from scipy import signal
+from scipy.ndimage import gaussian_filter
+
+#########################################################################################################
+#########################################################################################################
+###ecg_100Hz
+
+x=sigs.ecg_100Hz
+x1=sigs.airflow_calibrated_100Hz
+x2=sigs.airflow_100Hz
+
+
+def calc_dft(sig_src_arr):
+    sig_dest_imx_arr = [None]*int((len(sig_src_arr)/2))
+    sig_dest_rex_arr = [None]*int((len(sig_src_arr)/2))
+    sig_dest_mag_arr = [None]*int((len(sig_src_arr)/2))
+    
+    for j in range(int(len(sig_src_arr)/2)):
+        sig_dest_rex_arr[j] = 0
+        sig_dest_imx_arr[j] = 0
+
+    for k in range(int(len(sig_src_arr)/2)):
+        for i in range(len(sig_src_arr)):
+            sig_dest_rex_arr[k] = sig_dest_rex_arr[k] + sig_src_arr[i]*math.cos(2*math.pi*k*i/len(sig_src_arr))
+            sig_dest_imx_arr[k] = sig_dest_imx_arr[k] - sig_src_arr[i]*math.sin(2*math.pi*k*i/len(sig_src_arr))
+
+    for x in range(int(len(sig_src_arr)/2)):
+        sig_dest_mag_arr[x] = math.sqrt(math.pow(sig_dest_rex_arr[x],2)+math.pow(sig_dest_imx_arr[x],2))
+        
+    style.use('ggplot')
+    f,plt_arr = plt.subplots(1, sharex=True)
+    f.suptitle("DFT ecg 100Hz")
+    plt.xlim(0,305)
+    plt.ylim(0,14000)   
+    plt.stem(sig_dest_imx_arr)
+    plt.show()
+calc_dft(sigs.ecg_100Hz)
+a1=np.array(calc_dft(sigs.ecg_100Hz))
+
+#########################################################################################################
+#########################################################################################################
+##airflow_calibrated_100Hz
+def calc_dft(sig_src_arr):
+    sig_dest_imx_arr = [None]*int((len(sig_src_arr)/2))
+    sig_dest_rex_arr = [None]*int((len(sig_src_arr)/2))
+    sig_dest_mag_arr = [None]*int((len(sig_src_arr)/2))
+    
+    for j in range(int(len(sig_src_arr)/2)):
+        sig_dest_rex_arr[j] = 0
+        sig_dest_imx_arr[j] = 0
+
+    for k in range(int(len(sig_src_arr)/2)):
+        for i in range(len(sig_src_arr)):
+            sig_dest_rex_arr[k] = sig_dest_rex_arr[k] + sig_src_arr[i]*math.cos(2*math.pi*k*i/len(sig_src_arr))
+            sig_dest_imx_arr[k] = sig_dest_imx_arr[k] - sig_src_arr[i]*math.sin(2*math.pi*k*i/len(sig_src_arr))
+
+    for x in range(int(len(sig_src_arr)/2)):
+        sig_dest_mag_arr[x] = math.sqrt(math.pow(sig_dest_rex_arr[x],2)+math.pow(sig_dest_imx_arr[x],2))
+        
+    style.use('ggplot')
+    f,plt_arr = plt.subplots(1, sharex=True)
+    f.suptitle("DFT airflow calibrated 100Hz")
+    plt.xlim(0,470)
+    plt.ylim(0,22)   
+    plt.stem(sig_dest_imx_arr)
+    plt.show()
+calc_dft(sigs.airflow_calibrated_100Hz)
+
+#########################################################################################################
+#########################################################################################################
+###airflow_100Hz
+
+def calc_dft(sig_src_arr):
+    sig_dest_imx_arr = [None]*int((len(sig_src_arr)/2))
+    sig_dest_rex_arr = [None]*int((len(sig_src_arr)/2))
+    sig_dest_mag_arr = [None]*int((len(sig_src_arr)/2))
+    
+    for j in range(int(len(sig_src_arr)/2)):
+        sig_dest_rex_arr[j] = 0
+        sig_dest_imx_arr[j] = 0
+
+    for k in range(int(len(sig_src_arr)/2)):
+        for i in range(len(sig_src_arr)):
+            sig_dest_rex_arr[k] = sig_dest_rex_arr[k] + sig_src_arr[i]*math.cos(2*math.pi*k*i/len(sig_src_arr))
+            sig_dest_imx_arr[k] = sig_dest_imx_arr[k] - sig_src_arr[i]*math.sin(2*math.pi*k*i/len(sig_src_arr))
+
+    for x in range(int(len(sig_src_arr)/2)):
+        sig_dest_mag_arr[x] = math.sqrt(math.pow(sig_dest_rex_arr[x],2)+math.pow(sig_dest_imx_arr[x],2))
+        
+    style.use('ggplot')
+    f,plt_arr = plt.subplots(1, sharex=True)
+    f.suptitle("DFT airflow 100Hz")
+    plt.xlim(0,750)
+    plt.ylim(0,5500)   
+    plt.stem(sig_dest_imx_arr)
+    plt.show()
+calc_dft(sigs.airflow_100Hz)
+#########################################################################################################
+#########################################################################################################
+
+window_blackman=signal.get_window('blackman',51)
+window_triang=signal.get_window('triang',51)
+window_hamming=signal.get_window('hamming',51)
+window_gaussian=signal.gaussian(51, std=7)
+
+plt.plot(window_blackman, label='blackman_window', color='blue')
+plt.plot(window_triang, label='triang_window', color='green')
+plt.plot(window_hamming, label='hamming_window', color='red')
+plt.plot(window_gaussian, label='gaussian_window', color='yellow')
+plt.legend(loc='best')
+plt.grid()
+plt.show()
+
+
+#########################################################################################################
+#########################################################################################################
+x=sigs.ecg_100Hz
+len(x)
+
+lowpass_coef=signal.firwin(600,800,nyq=12500, window='nuttall')
+plt.plot(lowpass_coef)
+plt.show()
+
+output=signal.convolve(x,lowpass_coef, mode='same')
+f,plt_arr=plt.subplots(2,sharex=True)
+f.suptitle("Ventanas  ")
+plt_arr[0].plot(x,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output,color='blue')
+plt_arr[1].set_title("filtro pasa bajos 800 Hz")
+plt.show()
+#########################################################################################################
+#########################################################################################################
+
+highpas_coef=signal.firwin(51, 1000,nyq=12500, pass_zero=False,window='nuttall')
+plt.plot(highpas_coef)
+plt.show()
+
+output_pa=signal.convolve(x,highpas_coef, mode='same')
+f,plt_arr=plt.subplots(3,sharex=True)
+f.suptitle("Ventanas")
+plt_arr[0].plot(x,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output,color='blue')
+plt_arr[1].set_title("Señal Ppasa bajos 800 Hz")
+plt_arr[2].plot(output_pa,color='orange')
+plt_arr[2].set_title("Pasa altos")
+plt.show()
+#########################################################################################################
+#########################################################################################################
+
+f1, f2 = 400, 4000
+bandpass_coef=signal.firwin(200, [f1, f2], pass_zero=False ,nyq=12500,window='nuttall')#pasa banda
+plt.plot(bandpass_coef)
+plt.show()
+output_pb=signal.convolve(x,bandpass_coef, mode='same')
+plt.plot(output_pb)
+f,plt_arr=plt.subplots(4,sharex=True)
+f.suptitle("Ventanas")
+plt_arr[0].plot(x,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output,color='blue')
+plt_arr[1].set_title("Señal pasabajos 800 Hz")
+plt_arr[2].plot(output_pa,color='green')
+plt_arr[2].set_title("Señal pasa altos ")
+plt_arr[3].plot(output_pb,color='orange')
+plt_arr[3].set_title('señal pasa banda')
+plt.show()
+
+
+############3#########################################################################################################
+#########################################################################################################
+x1=sigs.airflow_calibrated_100Hz
+len(x1)
+plt.plot(x1)
+
+lowpass_coef=signal.firwin(50,1,nyq=20, window='nuttall')
+plt.plot(lowpass_coef)
+plt.show()
+
+output1=signal.convolve(x1,lowpass_coef, mode='same')
+f,plt_arr=plt.subplots(2,sharex=True)
+f.suptitle("Ventanas")
+plt_arr[0].plot(x1,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output1,color='blue')
+plt_arr[1].set_title("Señal pasa bajos a 1 Hz")
+plt.show()
+#########################################################################################################
+#########################################################################################################
+
+highpas_coef=signal.firwin(51, 0.6,nyq=20, pass_zero=False,window='nuttall')#ganacia
+plt.plot(highpas_coef)
+plt.show()
+output_pa1=signal.convolve(x1,highpas_coef, mode='same')
+f,plt_arr=plt.subplots(3,sharex=True)
+f.suptitle("Ventanas")
+plt_arr[0].plot(x1,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output1,color='blue')
+plt_arr[1].set_title("Señal pasa bajos a 1 Hz")
+plt_arr[2].plot(output_pa1,color='orange')
+plt_arr[2].set_title("Señal pasa altos a 2 Hz")
+plt.show()
+#########################################################################################################
+#########################################################################################################
+
+f1, f2 = 3, 7
+bandpass_coef=signal.firwin(51, [f1, f2], pass_zero=False ,nyq=12500,window='nuttall')#pasa banda
+plt.plot(bandpass_coef)
+plt.show()
+output_pb1=signal.convolve(x,bandpass_coef, mode='same')
+plt.plot(output_pb)
+f,plt_arr=plt.subplots(4,sharex=True)
+f.suptitle("Ventanas")
+plt_arr[0].plot(x1,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output1,color='red')
+plt_arr[1].set_title("Señalpasa bajos")
+plt_arr[2].plot(output_pa1,color='blue')
+plt_arr[2].set_title("Señal pasa altos ")
+plt_arr[3].plot(output_pb1,color='orange')
+plt_arr[3].set_title('señal pasa banda')
+plt.show()
+
+#########################################################################################################
+#########################################################################################################
+
+x2=sigs.airflow_100Hz
+len(x2)
+lowpass_coef=signal.firwin(150,200,nyq=5400, window='nuttall')
+plt.plot(lowpass_coef)
+plt.show()
+
+output2=signal.convolve(x2,lowpass_coef, mode='same')
+f,plt_arr=plt.subplots(2,sharex=True)
+f.suptitle("Ventanas  ")
+plt_arr[0].plot(x2,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output2,color='blue')
+plt_arr[1].set_title("Señal pasa bajos a 200 Hz")
+plt.show()
+
+#########################################################################################################
+#########################################################################################################
+
+
+highpas_coef=signal.firwin(51, 300,nyq=5400, pass_zero=False,window='nuttall')#ganacia
+plt.plot(highpas_coef)
+plt.show()
+output_pa2=signal.convolve(x2,highpas_coef, mode='same')
+f,plt_arr=plt.subplots(3,sharex=True)
+f.suptitle("Ventanas")
+plt_arr[0].plot(x2,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output2,color='blue')
+plt_arr[1].set_title("Senal pasa bajos a 1 Hz")
+plt_arr[2].plot(output_pa2,color='green')
+plt_arr[2].set_title("Senal pasa altos a 2 Hz")
+plt.show()
+#########################################################################################################
+#########################################################################################################
+
+
+f1, f2 = 100, 400
+bandpass_coef=signal.firwin(51, [f1, f2], pass_zero=False ,nyq=5400,window='nuttall')#pasa banda
+plt.plot(bandpass_coef)
+plt.show()
+output_pb2=signal.convolve(x2,bandpass_coef, mode='same')
+plt.plot(output_pb2)
+f,plt_arr=plt.subplots(4,sharex=True)
+f.suptitle("Ventanas")
+plt_arr[0].plot(x2,color='brown')
+plt_arr[0].set_title("Señal entrada")
+plt_arr[1].plot(output2,color='blue')
+plt_arr[1].set_title("Señal pasa bajos")
+plt_arr[2].plot(output_pa2,color='orange')
+plt_arr[2].set_title("Señal pasa altos  ")
+plt_arr[3].plot(output_pb2,color='red')
+plt_arr[3].set_title('señal pasa banda 100 a 400 Hz')
+plt.show()
